@@ -108,7 +108,7 @@ else
 fi
 
 if [[ -n "$README_DIR" && -d "$GITHUB_WORKSPACE/$README_DIR/" ]]; then
-  	rsync -ra "$GITHUB_WORKSPACE/$README_DIR/" trunk
+  	cp -rf "$GITHUB_WORKSPACE/$README_DIR/*" trunk/
 else
   	echo "ℹ︎ No readme file found; skipping readme file copy"
 fi
