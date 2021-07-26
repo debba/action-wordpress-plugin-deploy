@@ -107,7 +107,7 @@ else
 	echo "ℹ︎ No assets directory found; skipping asset copy"
 fi
 
-if [[ -z "$README_DIR" && -d "$GITHUB_WORKSPACE/$README_DIR/" ]]; then
+if [[ -n "$README_DIR" && -d "$GITHUB_WORKSPACE/$README_DIR/" ]]; then
   	rsync -ra "$GITHUB_WORKSPACE/$README_DIR/" trunk --delete
 else
   	echo "ℹ︎ No readme file found; skipping readme file copy"
