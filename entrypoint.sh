@@ -102,13 +102,13 @@ fi
 
 # Copy dotorg assets to /assets
 if [[ -d "$GITHUB_WORKSPACE/$ASSETS_DIR/" ]]; then
-	rsync -rc "$GITHUB_WORKSPACE/$ASSETS_DIR/*" assets/ --delete
+	rsync -rc "$GITHUB_WORKSPACE/$ASSETS_DIR/" assets/ --delete
 else
 	echo "ℹ︎ No assets directory found; skipping asset copy"
 fi
 
 if [[ -z "$README_DIR" && -d "$GITHUB_WORKSPACE/$README_DIR/" ]]; then
-  	rsync -rc "$GITHUB_WORKSPACE/$README_DIR/*" trunk/ --delete
+  	rsync -ra "$GITHUB_WORKSPACE/$README_DIR/" trunk --delete
 else
   	echo "ℹ︎ No readme file found; skipping readme file copy"
 fi
