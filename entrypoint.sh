@@ -107,6 +107,12 @@ else
 	echo "ℹ︎ No assets directory found; skipping asset copy"
 fi
 
+if [[ -z "$README_DIR" && -d "$GITHUB_WORKSPACE/$README_DIR/" ]]; then
+  	rsync -rc "$GITHUB_WORKSPACE/$README_DIR/*" trunk/ --delete
+else
+  	echo "ℹ︎ No readme file found; skipping readme file copy"
+fi
+
 # Add everything and commit to SVN
 # The force flag ensures we recurse into subdirectories even if they are already added
 # Suppress stdout in favor of svn status later for readability
