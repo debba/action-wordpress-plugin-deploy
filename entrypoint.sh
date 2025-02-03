@@ -111,8 +111,8 @@ if [[ -f "$GITHUB_WORKSPACE/composer.json" ]]; then
     echo "ℹ︎ composer.json found. Installing dependencies..."
     cd "$GITHUB_WORKSPACE"
     composer install --no-dev --ignore-platform-reqs
-    echo "ℹ︎ Adding vendor directory to SVN..."
-    svn add vendor --force
+    echo "ℹ︎ Copying vendor directory to TMP_DIR..."
+    rsync -rc "$GITHUB_WORKSPACE/vendor/" "$TMP_DIR/trunk/vendor/"
 fi
 
 # Copy dotorg assets to /assets
