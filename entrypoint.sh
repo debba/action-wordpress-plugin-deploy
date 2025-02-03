@@ -11,13 +11,13 @@ set -eo
 # they are by necessity provided as plaintext in the context of the Action,
 # so do not echo or use debug mode unless you want your secrets exposed!
 if [[ -z "$SVN_USERNAME" ]]; then
-	echo "Set the SVN_USERNAME secret"
-	exit 1
+    echo "Set the SVN_USERNAME secret"
+    exit 1
 fi
 
 if [[ -z "$SVN_PASSWORD" ]]; then
-	echo "Set the SVN_PASSWORD secret"
-	exit 1
+    echo "Set the SVN_PASSWORD secret"
+    exit 1
 fi
 
 # Set variables
@@ -30,19 +30,19 @@ fi
 
 # Allow some ENV variables to be customized
 if [[ -z "$SLUG" ]]; then
-	SLUG=${GITHUB_REPOSITORY#*/}
+    SLUG=${GITHUB_REPOSITORY#*/}
 fi
 echo "ℹ︎ SLUG is $SLUG"
 
 # Does it even make sense for VERSION to be editable in a workflow definition?
 if [[ -z "$VERSION" ]]; then
-	VERSION="${GITHUB_REF#refs/tags/}"
-	VERSION="${VERSION#v}"
+    VERSION="${GITHUB_REF#refs/tags/}"
+    VERSION="${VERSION#v}"
 fi
 echo "ℹ︎ VERSION is $VERSION"
 
 if [[ -z "$ASSETS_DIR" ]]; then
-	ASSETS_DIR=".wordpress-org"
+    ASSETS_DIR=".wordpress-org"
 fi
 echo "ℹ︎ ASSETS_DIR is $ASSETS_DIR"
 
@@ -61,58 +61,67 @@ git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
 echo "➤ Copying files..."
 if [[ -e "$GITHUB_WORKSPACE/.distignore" ]]; then
-	echo "ℹ︎ Using .distignore"
-	# Copy from current branch to /trunk, excluding dotorg assets
-	# The --delete flag will delete anything in destination that no longer exists in source
-	rsync -rc --exclude-from="$GITHUB_WORKSPACE/.distignore" "$GITHUB_WORKSPACE/" trunk/ --delete --delete-excluded
+    echo "ℹ︎ Using .distignore"
+    # Copy from current branch to /trunk, excluding dotorg assets
+    # The --delete flag will delete anything in destination that no longer exists in source
+    rsync -rc --exclude-from="$GITHUB_WORKSPACE/.distignore" "$GITHUB_WORKSPACE/" trunk/ --delete --delete-excluded
 else
-	echo "ℹ︎ Using .gitattributes"
+    echo "ℹ︎ Using .gitattributes"
 
-	cd "$GITHUB_WORKSPACE"
+    cd "$GITHUB_WORKSPACE"
 
-	# "Export" a cleaned copy to a temp directory
-	TMP_DIR="/github/archivetmp"
-	mkdir "$TMP_DIR"
+    # "Export" a cleaned copy to a temp directory
+    TMP_DIR="/github/archivetmp"
+    mkdir "$TMP_DIR"
 
-	git config --global user.email "10upbot+github@10up.com"
-	git config --global user.name "10upbot on GitHub"
+    git config --global user.email "10upbot+github@10up.com"
+    git config --global user.name "10upbot on GitHub"
 
-	# If there's no .gitattributes file, write a default one into place
-	if [[ ! -e "$GITHUB_WORKSPACE/.gitattributes" ]]; then
-		cat > "$GITHUB_WORKSPACE/.gitattributes" <<-EOL
-		/$ASSETS_DIR export-ignore
-		/.gitattributes export-ignore
-		/.gitignore export-ignore
-		/.github export-ignore
-		EOL
+    # If there's no .gitattributes file, write a default one into place
+    if [[ ! -e "$GITHUB_WORKSPACE/.gitattributes" ]]; then
+        cat > "$GITHUB_WORKSPACE/.gitattributes" <<-EOL
+        /$ASSETS_DIR export-ignore
+        /.gitattributes export-ignore
+        /.gitignore export-ignore
+        /.github export-ignore
+        EOL
 
-		# Ensure we are in the $GITHUB_WORKSPACE directory, just in case
-		# The .gitattributes file has to be committed to be used
-		# Just don't push it to the origin repo :)
-		git add .gitattributes && git commit -m "Add .gitattributes file"
-	fi
+        # Ensure we are in the $GITHUB_WORKSPACE directory, just in case
+        # The .gitattributes file has to be committed to be used
+        # Just don't push it to the origin repo :)
+        git add .gitattributes && git commit -m "Add .gitattributes file"
+    fi
 
-	# This will exclude everything in the .gitattributes file with the export-ignore flag
-	git archive HEAD | tar x --directory="$TMP_DIR"
+    # This will exclude everything in the .gitattributes file with the export-ignore flag
+    git archive HEAD | tar x --directory="$TMP_DIR"
 
-	cd "$SVN_DIR"
+    cd "$SVN_DIR"
 
-	# Copy from clean copy to /trunk, excluding dotorg assets
-	# The --delete flag will delete anything in destination that no longer exists in source
-	rsync -rc "$TMP_DIR/" trunk/ --delete --delete-excluded
+    # Copy from clean copy to /trunk, excluding dotorg assets
+    # The --delete flag will delete anything in destination that no longer exists in source
+    rsync -rc "$TMP_DIR/" trunk/ --delete --delete-excluded
+fi
+
+# Check if composer.json exists and install dependencies
+if [[ -f "$GITHUB_WORKSPACE/composer.json" ]]; then
+    echo "ℹ︎ composer.json found. Installing dependencies..."
+    cd "$GITHUB_WORKSPACE"
+    composer install --no-dev
+    echo "ℹ︎ Adding vendor directory to SVN..."
+    svn add vendor --force
 fi
 
 # Copy dotorg assets to /assets
 if [[ -d "$GITHUB_WORKSPACE/$ASSETS_DIR/" ]]; then
-	rsync -rc "$GITHUB_WORKSPACE/$ASSETS_DIR/" assets/ --delete
+    rsync -rc "$GITHUB_WORKSPACE/$ASSETS_DIR/" assets/ --delete
 else
-	echo "ℹ︎ No assets directory found; skipping asset copy"
+    echo "ℹ︎ No assets directory found; skipping asset copy"
 fi
 
 if [[ -n "$README_DIR" && -d "$GITHUB_WORKSPACE/$README_DIR/" ]]; then
-  	rsync -rc "$GITHUB_WORKSPACE/$README_DIR/" trunk/
+      rsync -rc "$GITHUB_WORKSPACE/$README_DIR/" trunk/
 else
-  	echo "ℹ︎ No readme file found; skipping readme file copy"
+      echo "ℹ︎ No readme file found; skipping readme file copy"
 fi
 
 # Add everything and commit to SVN
