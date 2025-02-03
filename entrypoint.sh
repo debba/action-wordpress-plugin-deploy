@@ -83,12 +83,12 @@ else
 
     # If there's no .gitattributes file, write a default one into place
     if [[ ! -e "$GITHUB_WORKSPACE/.gitattributes" ]]; then
-        cat > "$GITHUB_WORKSPACE/.gitattributes" <<-EOL
-        /$ASSETS_DIR export-ignore
-        /.gitattributes export-ignore
-        /.gitignore export-ignore
-        /.github export-ignore
-        EOL
+    cat > "$GITHUB_WORKSPACE/.gitattributes" <<EOL
+/$ASSETS_DIR export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.github export-ignore
+EOL
 
         # Ensure we are in the $GITHUB_WORKSPACE directory, just in case
         # The .gitattributes file has to be committed to be used
