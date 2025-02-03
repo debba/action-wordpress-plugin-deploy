@@ -110,7 +110,7 @@ fi
 if [[ -f "$GITHUB_WORKSPACE/composer.json" ]]; then
     echo "ℹ︎ composer.json found. Installing dependencies..."
     cd "$GITHUB_WORKSPACE"
-    composer install --no-dev
+    composer install --no-dev --ignore-platform-reqs
     echo "ℹ︎ Adding vendor directory to SVN..."
     svn add vendor --force
 fi
