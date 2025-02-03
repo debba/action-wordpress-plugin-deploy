@@ -20,6 +20,10 @@ if [[ -z "$SVN_PASSWORD" ]]; then
     exit 1
 fi
 
+if [[ -z "$SVN_HOST" ]]; then
+    SVN_HOST="https://plugins.svn.wordpress.org"
+fi
+
 # Set variables
 GENERATE_ZIP=false
 
@@ -46,12 +50,12 @@ if [[ -z "$ASSETS_DIR" ]]; then
 fi
 echo "ℹ︎ ASSETS_DIR is $ASSETS_DIR"
 
-SVN_URL="https://plugins.svn.wordpress.org/${SLUG}/"
+SVN_URL="${SVN_HOST}/${SLUG}/"
 SVN_DIR="/github/svn-${SLUG}"
 
 # Checkout just trunk and assets for efficiency
 # Tagging will be handled on the SVN level
-echo "➤ Checking out .org repository..."
+echo "➤ Checking out .org repository (${SVN_URL})..."
 svn checkout --depth immediates "$SVN_URL" "$SVN_DIR"
 cd "$SVN_DIR"
 svn update --set-depth infinity assets
